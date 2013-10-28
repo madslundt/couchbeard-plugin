@@ -4,7 +4,7 @@
   Plugin URI:
   Description: Manage API keys and login for applications
   Author: Mads Lundt
-  Version: 2.0
+  Version: 0.1
   Author URI:
 */
 
