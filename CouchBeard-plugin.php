@@ -24,17 +24,6 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
-function loadStyle()
-{
-    wp_register_style('style', plugin_dir_url(__FILE__) . 'couch-beard-api.css');
-    wp_enqueue_style('style');
-}
-
-add_action('admin_enqueue_scripts', 'loadStyle');
-
-
-
 class CouchBeardApi {
 
     const DOMAIN = 'couchbeard';
@@ -50,8 +39,15 @@ class CouchBeardApi {
         $this->load_dependencies();
 
         add_action('admin_menu', array(&$this,'add_menu_items'));
+        add_action('admin_menu', array(&$this, 'loadStyle'));
     }
 
+    private function loadStyle()
+    {
+        wp_register_style('style', plugins_url( 'css/style.css' , __FILE__ ));
+        wp_enqueue_style('style');
+    }
+    
     public function add_menu_items() {
         global $submenu;
         add_menu_page(
@@ -62,6 +58,8 @@ class CouchBeardApi {
             array(&$this,'render_couchbeard_page')
         );
     }
+
+
 
     public function add_couchbeard_settings($settings) {
         $new_settings = array(
