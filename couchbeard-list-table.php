@@ -94,7 +94,7 @@ class Couchbeard_List_Table extends WP_List_Table {
             foreach ($_POST[$this->_args['singular']] as $id) {
                 $wpdb->query($wpdb->prepare(
                     "
-                    UPDATE " . CouchBeardApi::$table_name . "
+                    UPDATE " . CouchBeardPlugin::$table_name . "
                     SET api = '', ip = '', username = '', password = ''
                     WHERE ID = %s
                     ", 
@@ -122,7 +122,7 @@ class Couchbeard_List_Table extends WP_List_Table {
         $apps = $wpdb->get_results(
             "
 			SELECT *
-			FROM " . CouchBeardApi::$table_name
+			FROM " . CouchBeardPlugin::$table_name
 	    );
 
         /**

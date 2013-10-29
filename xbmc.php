@@ -5,7 +5,7 @@
 		protected function setApp() 
 		{
 			$this->app = 'xbmc';
-			$this->login = getLogin($this->app);
+			$this->login = parrent::getLogin($this->app);
 		}
 
 		public function __construct() 
@@ -32,7 +32,7 @@
 	            'Authorization: Basic ' . base64_encode(($xbmc->password ? $xbmc->username. ':' . $xbmc->password : $xbmc->username))
 	        );
 
-	        $result = curl_download($url, $header);
+	        $result = parrent::curl_download($url, $header);
 
 	        return $result;
 		}

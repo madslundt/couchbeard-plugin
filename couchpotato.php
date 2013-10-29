@@ -19,7 +19,7 @@
 		public function version()
 		{
 	        $url = $this->getURL() . '/app.version';
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -34,7 +34,7 @@
 		public function available()
 		{		        
 			$url = $this->getURL() . '/app.available';
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -50,7 +50,7 @@
 		public function addMovie($id)
 		{
 	        $url = $this->getURL() . '/movie.add/?identifier=' . $id;
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -67,7 +67,7 @@
 		public function removeMovie($id)
 		{
 	        $url = $this->getURL() . '/movie.delete/?id=' . $id . '&delete_from=wanted';
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -82,7 +82,7 @@
 		public function getMovies()
 		{
 	        $url = $this->getURL() . '/movie.list/?status=active';
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -98,7 +98,7 @@
 		public function refreshMovie($id)
 		{
 	        $url = $this->getURL() . '/movie.list/?id=' . $id;
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -113,7 +113,7 @@
 		public function update()
 		{
 	        $url = $this->getURL() . '/updater.check';
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -129,7 +129,7 @@
 		public function movieWanted($imdb_id)
 		{
 	        $url = $this->getURL() . '/movie.get/?id=' . $imdb_id;
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 

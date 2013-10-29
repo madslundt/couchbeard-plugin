@@ -5,7 +5,7 @@
 		protected function setApp() 
 		{
 			$this->app = 'sabnzbd';
-			$this->api = getAPI($this->app);
+			$this->api = parrent::getAPI($this->app);
 		}
 
 		public function __construct() 
@@ -20,7 +20,7 @@
 		public function version()
 		{
 	        $url = $this->getURL() . 'version';
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -35,7 +35,7 @@
 		public function getCurrentDownloads()
 		{
 	        $url = $this->getURL() . 'qstatus';
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -52,7 +52,7 @@
 		public function getHistory($start = 0, $limit = 5)
 		{
 	        $url = $this->getURL() . 'history&start=' . $start . '&limit=' . $limit;
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -67,7 +67,7 @@
 		public function getQueue() 
 		{
 	        $url = $this->getURL() . 'qstatus';
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 

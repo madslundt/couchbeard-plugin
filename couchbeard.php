@@ -25,7 +25,7 @@ abstract class couchbeard
 		if (!$this->isAlive())
 			throw new Exception($this->app . " is not alive.");
 
-		$this->url = getURL($this->app);
+		$this->url = self::getURL($this->app);
 	}
 
 	/**
@@ -61,19 +61,15 @@ abstract class couchbeard
 	 */
 	public function isAlive() 
 	{
-		return isAlive($this->app);
+		return self::isAlive($this->app);
 	}
-
-} // abstract class end
-
-
 
 	/**
 	 * Download website
 	 * @param  string $url Download URL
 	 * @return $json      Website
 	 */
-	function curl_download($url, $headers = null)
+	public static function curl_download($url, $headers = null)
 	{
 	    // is cURL installed yet?
 	    if (!function_exists('curl_init'))
@@ -126,12 +122,12 @@ abstract class couchbeard
 	 * Return all application names in database
 	 * @return array string array
 	 */
-	function getAllApps() {
+	public static function getAllApps() {
 		global $wpdb;
 	    $app = $wpdb->get_col($wpdb->prepare(
 	        "
 	        SELECT name
-	        FROM " . CouchBeardApi::$table_name
+	        FROM " . CouchBeardPlugin::$table_name
 	    ));
 
 	    return $app;
@@ -141,7 +137,7 @@ abstract class couchbeard
 	 * Checks every applications in the database if they are online
 	 * @return boolean online
 	 */
-	function isAnyAlive() 
+	public static function isAnyAlive() 
 	{
 	    $app = getAllApps();
 	    $notAlive = array();
@@ -157,13 +153,13 @@ abstract class couchbeard
 	 * @param  string $app application input
 	 * @return string      api
 	 */
-	function getAPI($app)
+	public static function getAPI($app)
 	{
 		global $wpdb;
 	    $api = $wpdb->get_var($wpdb->prepare(
 	        "
 			SELECT api
-			FROM " . CouchBeardApi::$table_name . "
+			FROM " . CouchBeardPlugin::$table_name . "
 			WHERE name = %s
 			", $app
 	    ));
@@ -178,13 +174,13 @@ abstract class couchbeard
 	 * @param  string $app application input
 	 * @return [string,string]      login
 	 */
-	function getLogin($app)
+	public static function getLogin($app)
 	{
 		global $wpdb;
 	    $user = $wpdb->get_row($wpdb->prepare(
 	        "
 			SELECT username, password
-			FROM " . CouchBeardApi::$table_name . "
+			FROM " . CouchBeardPlugin::$table_name . "
 			WHERE name = %s
 			", $app
 	    ));
@@ -199,13 +195,13 @@ abstract class couchbeard
 	 * @param  string $app application input
 	 * @return string      url
 	 */
-	function getURL($app)
+	public static function getURL($app)
 	{
 	    global $wpdb;
 	    $ip = $wpdb->get_var($wpdb->prepare(
 	        "
 			SELECT ip
-			FROM " . CouchBeardApi::$table_name . "
+			FROM " . CouchBeardPlugin::$table_name . "
 			WHERE name = %s
 			", $app
 	    ));
@@ -225,7 +221,7 @@ abstract class couchbeard
 	 * @param  string  $app application input
 	 * @return boolean      online status
 	 */
-	function isAlive($app) 
+	public static function isAlive($app) 
 	{
 	    $header = '';
 	    switch(strtolower($app))
@@ -265,7 +261,7 @@ abstract class couchbeard
 	 * @param  string $imdb_id IMDb ID
 	 * @return string     TVDB ID
 	 */
-	function imdb_to_tvdb($imdb)
+	public static function imdb_to_tvdb($imdb)
 	{
 	    $xml = simplexml_load_string(curl_download('http://thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=' . $imdb));
 	    return (string) $xml->Series->children()->seriesid;
@@ -276,9 +272,11 @@ abstract class couchbeard
 	 * @param  string $name name of show
 	 * @return string     IMDb ID
 	 */
-	function tvdb_to_imdb($name)
+	public static function tvdb_to_imdb($name)
 	{
 	    $xml = simplexml_load_string(file_get_contents('http://thetvdb.com/api/GetSeries.php?seriesname=' . urlencode($name)));
 	    return (string) $xml->Series->children()->IMDB_ID;
 	}
+
+} // abstract class end
 ?>

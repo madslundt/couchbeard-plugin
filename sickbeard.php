@@ -6,7 +6,7 @@
 		protected function setApp() 
 		{
 			$this->app = 'sickbeard';
-			$this->api = getAPI($this->app);
+			$this->api = parrent::getAPI($this->app);
 		}
 
 		public function __construct() 
@@ -21,7 +21,7 @@
 		public function version()
 		{
 	        $url = $this->getURL() . '/?cmd=sb';
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -37,7 +37,7 @@
 		public function addShow($id)
 		{
 	        $url = $this->getURL() . '/?cmd=show.addnew&tvdbid=' . imdb_to_tvdb($id);
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -52,7 +52,7 @@
 		public function getShows()
 		{
 	        $url = $this->getURL() . '/?cmd=shows';
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -68,7 +68,7 @@
 		public function getShow($id)
 		{
 	        $url = $this->getURL() . '/?cmd=show&tvdbid=' . $id;
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -94,7 +94,7 @@
 		public function getFuture()
 		{
 	        $url = $this->getURL() . '/?cmd=future&sort=date';
-	        $json = curl_download($url);
+	        $json = parrent::curl_download($url);
 	        if (!$json)
 	            return false;
 

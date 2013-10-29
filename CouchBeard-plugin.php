@@ -24,13 +24,14 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-class CouchBeardApi {
+class CouchBeardPlugin {
 
     const DOMAIN = 'couchbeard';
 
     public static $table_name;
 
-    public static $apis = array("Couchpotato", "Sickbeard", "SabNZBD");
+    // For database create.
+    public static $apis = array("CouchPotato", "SickBeard", "SABnzbd");
     public static $logins = array("XBMC");
 
     public function __construct() {
@@ -162,14 +163,14 @@ class CouchBeardApi {
 
 } //class
 
-new CouchBeardApi();
+new CouchBeardPlugin();
 
 if (isset($_POST['submitbutton'])) {
 
     $apps = $wpdb->get_results(
         "
         SELECT *
-        FROM " . CouchBeardApi::$table_name
+        FROM " . CouchBeardPlugin::$table_name
     );
 
     foreach ($apps as $app) {
@@ -177,7 +178,7 @@ if (isset($_POST['submitbutton'])) {
             if (strlen($_POST['api' . $app->ID]) > 2 && strlen($_POST['ip' . $app->ID]) > 2) {
                 $wpdb->query($wpdb->prepare(
                     "
-                    UPDATE " . CouchBeardApi::$table_name . "
+                    UPDATE " . CouchBeardPlugin::$table_name . "
                     SET api = %s, ip = %s
                     WHERE ID = %s
                     ", 
@@ -192,7 +193,7 @@ if (isset($_POST['submitbutton'])) {
             if (strlen($_POST['user' . $app->ID]) > 2 && strlen($_POST['pass' . $app->ID]) > 2 && strlen($_POST['ip' . $app->ID]) > 2) {
                 $wpdb->query($wpdb->prepare(
                     "
-                    UPDATE " . CouchBeardApi::$table_name . "
+                    UPDATE " . CouchBeardPlugin::$table_name . "
                     SET ip = %s, username = %s, password = %s
                     WHERE ID = %s
                     ", 

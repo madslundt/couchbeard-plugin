@@ -17,7 +17,7 @@
 		private function getData($id)
 		{
 			$this->url = "http://www.omdbapi.com/?i=" . $id . "&plot=full";
-			$this->data = json_decode(curl_download($this->url));
+			$this->data = json_decode(couchbeard::curl_download($this->url));
 			if ($this->data->Response == 'False' || isset($this->data->Error)) {
 				$oldID = $this->id;
 				$this->id = false;
