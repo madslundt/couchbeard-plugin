@@ -2,10 +2,12 @@
 	class couchpotato extends couchbeard 
 	{
 
+		const APP = 'couchpotato';
+
 		protected function setApp() 
 		{
-			$this->app = 'couchpotato';
-			$this->api = getAPI($this->app);
+			$this->app = self::APP;
+			$this->api = parent::getAPI();
 		}
 
 		public function __construct() {
@@ -19,7 +21,7 @@
 		public function version()
 		{
 	        $url = $this->getURL() . '/app.version';
-	        $json = parrent::curl_download($url);
+	        $json = parent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -34,7 +36,7 @@
 		public function available()
 		{		        
 			$url = $this->getURL() . '/app.available';
-	        $json = parrent::curl_download($url);
+	        $json = parent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -50,7 +52,7 @@
 		public function addMovie($id)
 		{
 	        $url = $this->getURL() . '/movie.add/?identifier=' . $id;
-	        $json = parrent::curl_download($url);
+	        $json = parent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -67,7 +69,7 @@
 		public function removeMovie($id)
 		{
 	        $url = $this->getURL() . '/movie.delete/?id=' . $id . '&delete_from=wanted';
-	        $json = parrent::curl_download($url);
+	        $json = parent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -82,7 +84,7 @@
 		public function getMovies()
 		{
 	        $url = $this->getURL() . '/movie.list/?status=active';
-	        $json = parrent::curl_download($url);
+	        $json = parent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -98,7 +100,7 @@
 		public function refreshMovie($id)
 		{
 	        $url = $this->getURL() . '/movie.list/?id=' . $id;
-	        $json = parrent::curl_download($url);
+	        $json = parent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -113,7 +115,7 @@
 		public function update()
 		{
 	        $url = $this->getURL() . '/updater.check';
-	        $json = parrent::curl_download($url);
+	        $json = parent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -129,7 +131,7 @@
 		public function movieWanted($imdb_id)
 		{
 	        $url = $this->getURL() . '/movie.get/?id=' . $imdb_id;
-	        $json = parrent::curl_download($url);
+	        $json = parent::curl_download($url);
 	        if (!$json)
 	            return false;
 

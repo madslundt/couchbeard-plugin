@@ -25,7 +25,7 @@ abstract class couchbeard
 		if (!$this->isAlive())
 			throw new Exception($this->app . " is not alive.");
 
-		$this->url = self::getURL($this->app);
+		$this->url = self::retrieveURL($this->app);
 	}
 
 	/**
@@ -61,7 +61,7 @@ abstract class couchbeard
 	 */
 	public function isAlive() 
 	{
-		return self::isAlive($this->app);
+		return self::isAppAlive($this->app);
 	}
 
 	/**
@@ -153,7 +153,7 @@ abstract class couchbeard
 	 * @param  string $app application input
 	 * @return string      api
 	 */
-	public static function getAPI($app)
+	public static function retrieveAPI($app)
 	{
 		global $wpdb;
 	    $api = $wpdb->get_var($wpdb->prepare(
@@ -174,7 +174,7 @@ abstract class couchbeard
 	 * @param  string $app application input
 	 * @return [string,string]      login
 	 */
-	public static function getLogin($app)
+	public static function retrieveLogin($app)
 	{
 		global $wpdb;
 	    $user = $wpdb->get_row($wpdb->prepare(
@@ -195,7 +195,7 @@ abstract class couchbeard
 	 * @param  string $app application input
 	 * @return string      url
 	 */
-	public static function getURL($app)
+	public static function retrieveURL($app)
 	{
 	    global $wpdb;
 	    $ip = $wpdb->get_var($wpdb->prepare(
@@ -211,9 +211,9 @@ abstract class couchbeard
 	    if ($app == 'xbmc')
 	    	return 'http://' . $ip;
 	    else if ($app == 'sabnzbd')
-	    	return 'http://' . $ip . '/api?apikey=' . getAPI($app) . '&output=json&mode=';
+	    	return 'http://' . $ip . '/api?apikey=' . self::retrieveAPI($app) . '&output=json&mode=';
 
-	    return 'http://' . $ip . '/api/' . getAPI($app);
+	    return 'http://' . $ip . '/api/' . self::retrieveAPI($app);
 	}
 
 	/**
@@ -221,26 +221,26 @@ abstract class couchbeard
 	 * @param  string  $app application input
 	 * @return boolean      online status
 	 */
-	public static function isAlive($app) 
+	public static function isAppAlive($app) 
 	{
 	    $header = '';
 	    switch(strtolower($app))
 	    {
 	        case 'couchpotato':
 	        case 'cp':
-	            $url = getURL($app) . '/app.available';
+	            $url = self::retrieveURL($app) . '/app.available';
 	            break;
 	        case 'sickbeard':
 	        case 'sb':
-	            $url = getURL($app);
+	            $url = self::retrieveURL($app);
 	            break;
 	        case 'sabnzbd':
 	        case 'sab':
-	            $url = getURL($app);
+	            $url = self::retrieveURL($app);
 	            break;
 	        case 'xbmc':
-	            $url = getURL($app);
-	            $xbmc = getLogin($app);
+	            $url = self::retrieveURL($app);
+	            $xbmc = self::retrieveLogin($app);
 	            $header = array(
 	                'Content-Type: application/json',
 	                'Authorization: Basic ' . base64_encode($xbmc->username . ':' . $xbmc->password)
@@ -250,7 +250,7 @@ abstract class couchbeard
 	            return false;
 	    }
 	    
-	    if (!(curl_download($url, $header)))
+	    if (!(self::curl_download($url, $header)))
 	        return false;
 
 	    return true;

@@ -43,7 +43,7 @@ class CouchBeardPlugin {
         add_action('admin_menu', array(&$this, 'loadStyle'));
     }
 
-    private function loadStyle()
+    public function loadStyle()
     {
         wp_register_style('style', plugins_url( 'css/style.css' , __FILE__ ));
         wp_enqueue_style('style');
@@ -211,7 +211,19 @@ if (isset($_POST['submitbutton'])) {
 
 function setFooter() {
 ?>
-    %3Cdiv%20class%3D%22span1%20pull-right%22%3E%0A%20%20%20%20%20%20%20%20%3Cform%20action%3D%22https%3A%2F%2Fwww.paypal.com%2Fcgi-bin%2Fwebscr%22%20method%3D%22post%22%20target%3D%22_top%22%3E%0A%20%20%20%20%20%20%20%20%3Cinput%20type%3D%22hidden%22%20name%3D%22cmd%22%20value%3D%22_donations%22%3E%0A%20%20%20%20%20%20%20%20%3Cinput%20type%3D%22hidden%22%20name%3D%22business%22%20value%3D%22madslundt%40live.dk%22%3E%0A%20%20%20%20%20%20%20%20%3Cinput%20type%3D%22hidden%22%20name%3D%22lc%22%20value%3D%22DK%22%3E%0A%20%20%20%20%20%20%20%20%3Cinput%20type%3D%22hidden%22%20name%3D%22item_name%22%20value%3D%22CouchBeard%22%3E%0A%20%20%20%20%20%20%20%20%3Cinput%20type%3D%22hidden%22%20name%3D%22no_note%22%20value%3D%220%22%3E%0A%20%20%20%20%20%20%20%20%3Cinput%20type%3D%22hidden%22%20name%3D%22currency_code%22%20value%3D%22EUR%22%3E%0A%20%20%20%20%20%20%20%20%3Cinput%20type%3D%22hidden%22%20name%3D%22bn%22%20value%3D%22PP-DonationsBF%3Abtn_donate_LG.gif%3ANonHostedGuest%22%3E%0A%20%20%20%20%20%20%20%20%3Cinput%20type%3D%22image%22%20src%3D%22https%3A%2F%2Fwww.paypalobjects.com%2Fda_DK%2Fi%2Fbtn%2Fbtn_donate_LG.gif%22%20border%3D%220%22%20name%3D%22submit%22%20alt%3D%22PayPal%20%E2%80%93%20den%20sikre%20og%20nemme%20m%C3%A5de%20at%20betale%20p%C3%A5%20nettet.%22%3E%0A%20%20%20%20%20%20%20%20%3Cimg%20alt%3D%22%22%20border%3D%220%22%20src%3D%22https%3A%2F%2Fwww.paypalobjects.com%2Fda_DK%2Fi%2Fscr%2Fpixel.gif%22%20width%3D%221%22%20height%3D%221%22%3E%0A%20%20%20%20%20%20%20%20%3C%2Fform%3E%0A%20%20%20%20%3C%2Fdiv%3E
+    <div class="span1 pull-right">
+        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+        <input type="hidden" name="cmd" value="_donations">
+        <input type="hidden" name="business" value="madslundt@live.dk">
+        <input type="hidden" name="lc" value="DK">
+        <input type="hidden" name="item_name" value="CouchBeard">
+        <input type="hidden" name="no_note" value="0">
+        <input type="hidden" name="currency_code" value="EUR">
+        <input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+        <input type="image" src="https://www.paypalobjects.com/da_DK/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal – den sikre og nemme måde at betale på nettet.">
+        <img alt="" border="0" src="https://www.paypalobjects.com/da_DK/i/scr/pixel.gif" width="1" height="1">
+        </form>
+    </div>
 <?php
 }
 add_action('wp_footer', 'setFooter');

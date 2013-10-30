@@ -2,10 +2,12 @@
 	class sabnzbd extends couchbeard 
 	{
 
+		const APP = 'sabnzbd';
+
 		protected function setApp() 
 		{
-			$this->app = 'sabnzbd';
-			$this->api = parrent::getAPI($this->app);
+			$this->app = self::APP;
+			$this->api = parent::getAPI();
 		}
 
 		public function __construct() 
@@ -20,7 +22,7 @@
 		public function version()
 		{
 	        $url = $this->getURL() . 'version';
-	        $json = parrent::curl_download($url);
+	        $json = parent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -34,8 +36,8 @@
 		 */
 		public function getCurrentDownloads()
 		{
-	        $url = $this->getURL() . 'qstatus';
-	        $json = parrent::curl_download($url);
+	        $url = $this->getURL() . 'status';
+	        $json = parent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -52,7 +54,7 @@
 		public function getHistory($start = 0, $limit = 5)
 		{
 	        $url = $this->getURL() . 'history&start=' . $start . '&limit=' . $limit;
-	        $json = parrent::curl_download($url);
+	        $json = parent::curl_download($url);
 	        if (!$json)
 	            return false;
 
@@ -67,7 +69,7 @@
 		public function getQueue() 
 		{
 	        $url = $this->getURL() . 'qstatus';
-	        $json = parrent::curl_download($url);
+	        $json = parent::curl_download($url);
 	        if (!$json)
 	            return false;
 

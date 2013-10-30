@@ -2,10 +2,12 @@
 	class xbmc extends couchbeard 
 	{
 
+		const APP = 'xbmc';
+
 		protected function setApp() 
 		{
-			$this->app = 'xbmc';
-			$this->login = parrent::getLogin($this->app);
+			$this->app = self::APP;
+			$this->login = parent::getLogin();
 		}
 
 		public function __construct() 
@@ -32,7 +34,7 @@
 	            'Authorization: Basic ' . base64_encode(($xbmc->password ? $xbmc->username. ':' . $xbmc->password : $xbmc->username))
 	        );
 
-	        $result = parrent::curl_download($url, $header);
+	        $result = parent::curl_download($url, $header);
 
 	        return $result;
 		}
