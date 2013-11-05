@@ -2,13 +2,15 @@
 	class xbmc extends couchbeard 
 	{
 
+		const APP = 'xbmc';
+
 		const JSON_RPC_VERSION = '2.0';
 		const LIBRARY_ID = '1'; // Just something random
 
 		protected function setApp() 
 		{
-			$this->app = 'xbmc';
-			$this->login = parrent::getLogin($this->app);
+			$this->app = self::APP;
+			$this->login = parent::getLogin($this->app);
 		}
 
 		public function __construct() 
@@ -36,7 +38,7 @@
 	            'Authorization: Basic ' . base64_encode(($xbmc->password ? $xbmc->username. ':' . $xbmc->password : $xbmc->username))
 	        );
 
-	        $result = parrent::curl_download($url, $header);
+	        $result = parent::curl_download($url, $header);
 
 	        return $result;
 		}
@@ -65,7 +67,7 @@
 	            'Authorization: Basic ' . base64_encode(($xbmc->password ? $xbmc->username. ':' . $xbmc->password : $xbmc->username))
 	        );
 
-	        $result = parrent::curl_download($url, $header);
+	        $result = parent::curl_download($url, $header);
 
 	        return $result;
 		}
