@@ -2,12 +2,13 @@
 	class xbmc extends couchbeard 
 	{
 
-		const APP = 'xbmc';
+		const JSON_RPC_VERSION = '2.0';
+		const LIBRARY_ID = '1'; // Just something random
 
 		protected function setApp() 
 		{
-			$this->app = self::APP;
-			$this->login = parent::getLogin();
+			$this->app = 'xbmc';
+			$this->login = parrent::getLogin($this->app);
 		}
 
 		public function __construct() 
@@ -21,6 +22,7 @@
 		 */
 		private function API($json)
 		{
+
 		    if (empty($json))
 		    {
 		        return false;
@@ -34,7 +36,36 @@
 	            'Authorization: Basic ' . base64_encode(($xbmc->password ? $xbmc->username. ':' . $xbmc->password : $xbmc->username))
 	        );
 
-	        $result = parent::curl_download($url, $header);
+	        $result = parrent::curl_download($url, $header);
+
+	        return $result;
+		}
+
+		private function API($method, $properties = array(), $sort = array(), $limits = array())
+		{
+	    	$params = array(
+	    		'properties' => $properties,
+	    		'sort' => $sort,
+	    		'limits' => $limits
+	    	);
+
+		    $json = array(
+		    	'jsonrpc' => self::JSON_RPC_VERSION,
+		    	'method' => $method,
+		    	'params' => $params,
+		    	'id' => self::LIBRARY_ID
+		    );
+
+	        $xbmc = $this->getLogin('XBMC');
+	        $json = urlencode(json_encode($json));
+	        $url = $this->getURL() . '/jsonrpc?request=' . $json;
+
+	        $header = array(
+	            'Content-Type: application/json',
+	            'Authorization: Basic ' . base64_encode(($xbmc->password ? $xbmc->username. ':' . $xbmc->password : $xbmc->username))
+	        );
+
+	        $result = parrent::curl_download($url, $header);
 
 	        return $result;
 		}
@@ -45,12 +76,21 @@
 		 */
 		public function getMovies($start = '', $end = '')
 		{
-	        if (empty($start) && empty($end))
-	            $json = '{"jsonrpc": "2.0", "method": "VideoLibrary.GetMovies", "params": { "properties" : ["art", "thumbnail", "rating", "playcount", "year", "imdbnumber"], "sort": { "order": "ascending", "method": "sorttitle", "ignorearticle": true } }, "id": "libMovies"}';
-	        else
-	            $json = '{"jsonrpc": "2.0", "method": "VideoLibrary.GetMovies", "params": { "limits": { "start" : ' . intval($start) . ', "end" : ' . intval($start + $end) . ' }, "properties" : ["art", "thumbnail", "rating", "playcount", "year", "imdbnumber"], "sort": { "order": "ascending", "method": "sorttitle", "ignorearticle": true} }, "id": "libMovies"}';
-
-	        $data = json_decode($this->API($json));
+			$method = 'VideoLibrary.GetMovies';
+			$properties = array("art", "thumbnail", "rating", "playcount", "year", "imdbnumber");
+			$limits = array();
+			$order = array(
+				"order" => "ascending", 
+				"method" => "sorttitle", 
+				"ignorearticle" => true 
+			);
+	        if (!empty($start) || !empty($end))
+	        	$limits = array(
+	        		"start" => intval($start), 
+	        		"end" => intval($start + $end)
+	        	);
+	            
+	        $data = json_decode($this->API($method, $properties, $limits, $order));
 
 	        return $data->result->movies;
 		}
