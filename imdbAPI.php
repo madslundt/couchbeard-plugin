@@ -98,5 +98,10 @@
 			return $this->data->Type;
 		}
 
+		public function released()
+		{
+			return $this->data->Released;
+		}
+
 	}
 ?>

@@ -108,8 +108,7 @@ class CouchBeardPlugin {
 
         self::$table_name = $wpdb->prefix . 'apis';
         $wpdb->api = $wpdb->prefix . 'apis';
-
-        if ($wpdb->get_var('SHOW TABLES LIKE ' . $wpdb->api) != $wpdb->api)
+        if ($wpdb->get_var('SHOW TABLES LIKE \'' . $wpdb->api . '\'') != $wpdb->api)
         {
             $sql = "CREATE TABLE " . $wpdb->api . "(
                   ID INT(20) UNSIGNED NOT NULL AUTO_INCREMENT ,
@@ -126,17 +125,18 @@ class CouchBeardPlugin {
             dbDelta($sql);
 
             add_option('api_database_version', '1.0');
-        }
 
-        foreach (self::$apis as $a)
-        {
-            $wpdb->insert($wpdb->api, array('name' => $a));
-        }
+	        foreach (self::$apis as $a)
+	        {
+	            $wpdb->insert($wpdb->api, array('name' => $a));
+		    }
 
-        foreach (self::$logins as $l)
-        {
-            $wpdb->insert($wpdb->api, array('name' => $l, 'login' => 1));
-        }
+	        foreach (self::$logins as $l)
+	        {
+	           	$wpdb->insert($wpdb->api, array('name' => $l, 'login' => 1));
+	        
+	        }
+	    }
 
         require_once(__DIR__ . '/couchbeard-list-table.php');
 
@@ -210,7 +210,7 @@ if (isset($_POST['submitbutton'])) {
     }
 }
 
-function setFooter() {
+/*function setFooter() {
 ?>
     <div class="span1 pull-right">
         <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
@@ -227,5 +227,5 @@ function setFooter() {
     </div>
 <?php
 }
-add_action('wp_footer', 'setFooter');
+add_action('wp_footer', 'setFooter');*/
 ?>

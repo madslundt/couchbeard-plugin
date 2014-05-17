@@ -86,7 +86,8 @@ abstract class couchbeard
 	    // Set a referer
 	    //curl_setopt($ch, CURLOPT_REFERER, "http://www.example.org/yay.htm");
 	    // User agent
-	    curl_setopt($ch, CURLOPT_USERAGENT, $defined_vars['HTTP_USER_AGENT']);
+	    if (isset($defined_vars['HTTP_USER_AGENT']))
+	    	curl_setopt($ch, CURLOPT_USERAGENT, $defined_vars['HTTP_USER_AGENT']);
 
 	    // Include header in result? (0 = yes, 1 = no)
 	    curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -137,12 +138,12 @@ abstract class couchbeard
 	 * Checks every applications in the database if they are online
 	 * @return boolean online
 	 */
-	public static function isAnyAlive() 
+	public static function isAnyAlive()
 	{
-	    $app = getAllApps();
+	    $app = self::getAllApps();
 	    $notAlive = array();
 	    foreach ($app as $a) {
-	        if (!isAlive($a))
+	        if (!self::isAlive($a))
 	            array_push($notAlive, $a);
 	    }
 	    return $notAlive;
@@ -211,7 +212,7 @@ abstract class couchbeard
 	    if ($app == 'xbmc')
 	    	return 'http://' . $ip;
 	    else if ($app == 'sabnzbd')
-	    	return 'http://' . $ip . '/api?apikey=' . self::retrieveAPI($app) . '&output=json&mode=';
+	    	return 'http://' . $ip . '/api/?apikey=' . self::retrieveAPI($app) . '&output=json&mode=';
 
 	    return 'http://' . $ip . '/api/' . self::retrieveAPI($app);
 	}

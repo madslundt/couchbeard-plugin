@@ -103,6 +103,23 @@
 	        $data = json_decode($json);
 	        return $data->data;
 		}
+
+		/**
+		 * Returns SickBeard's downloaded/snatched history.
+		 * @return array history shows
+		 */
+		public function getHistory($type = '')
+		{
+	        $url = $this->getURL() . '/?cmd=history&sort=date';
+	        if (!empty($type))
+	        	$url .= '&type=' . $type;
+	        $json = parent::curl_download($url);
+	        if (!$json)
+	            return false;
+
+	        $data = json_decode($json);
+	        return $data->data;
+		}
 	}
 
 ?>

@@ -93,6 +93,21 @@
 		}
 
 		/**
+		 * Get a specific movie by id
+		 * @return object Movie
+		 */
+		public function getMovie($id)
+		{
+	        $url = $this->getURL() . '/movie.get/?id=' . $id;
+	        $json = parent::curl_download($url);
+	        if (!$json)
+	            return false;
+
+	        $data = json_decode($json);
+	        return $data->movie;
+		}
+
+		/**
 		 * Refresh a movie in Couchpotato
 		 * @param  int $id Couchpotato id
 		 * @return bool     Success
