@@ -41,12 +41,17 @@ class CouchBeardPlugin {
 
         add_action('admin_menu', array(&$this,'add_menu_items'));
         add_action('admin_menu', array(&$this, 'loadStyle'));
+
+        /**
+         * After the plugins have loaded initalise a single instance of couchbeard
+         */
+        add_action( 'plugins_loaded', array( 'couchbeard_widget', 'get_instance' ) );
     }
 
     public function loadStyle()
     {
-        wp_register_style('style', plugins_url( 'css/style.css' , __FILE__ ));
-        wp_enqueue_style('style');
+        wp_register_style('admin_style', plugins_url( 'css/admin_style.css' , __FILE__ ));
+        wp_enqueue_style('admin_style');
     }
     
     public function add_menu_items() {
@@ -60,7 +65,9 @@ class CouchBeardPlugin {
         );
     }
 
-
+    public static function getAllApps() {
+        return array_merge(self::$apis, self::$logins);
+    }
 
     public function add_couchbeard_settings($settings) {
         $new_settings = array(
@@ -140,26 +147,35 @@ class CouchBeardPlugin {
 
         require_once(__DIR__ . '/couchbeard-list-table.php');
 
+        add_action( 'wp_enqueue_scripts', function() {
+            wp_register_script( 'cb_custom_scripts', plugins_url('js/custom-scripts.js', __FILE__ ), array('jquery'), '1.0', true );
+    		wp_enqueue_script( 'cb_custom_scripts' );
+            wp_register_style('fancyinput_style', plugins_url( 'css/fancyinput.css', __FILE__ ));
+            wp_register_script( 'fancyinput_script', plugins_url('/js/fancyinput.js', __FILE__ ), array('jquery'), '1.0', true );
+            wp_deregister_script('jquery');
+            wp_register_script('jquery', '//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js', false, '1.11.0', false);
+        });
 
-        if (!class_exists('couchbeard'))
+        if (!class_exists('couchbeard')) {
             require_once(__DIR__ . '/couchbeard.php');
-
-        if (!class_exists('sabnzbd'))
-            require_once(__DIR__ . '/sabnzbd.php');
-
-        if (!class_exists('couchpotato'))
+        }
+        if (!class_exists('couchpotato')) {
             require_once(__DIR__ . '/couchpotato.php');
-
-        if (!class_exists('sickbeard'))
-            require_once(__DIR__ . '/sickbeard.php');
-
-        if (!class_exists('xbmc'))
+        }
+        if (!class_exists('xbmc')) {
             require_once(__DIR__ . '/xbmc.php');
+        }
+        if (!class_exists('sickbeard')) {
+            require_once(__DIR__ . '/sickbeard.php');
+        }
+        if (!class_exists('sabnzbd')) {
+            require_once(__DIR__ . '/sabnzbd.php');
+        }
 
         if (!class_exists('imdbAPI'))
             require_once(__DIR__ . '/imdbAPI.php');
 
-        require_once(__DIR__ . '/ajax_calls.php');
+        // require_once(__DIR__ . '/ajax_calls.php');
     }
 
 } //class
@@ -208,6 +224,369 @@ if (isset($_POST['submitbutton'])) {
             }
         }
     }
+}
+
+
+/**
+ * couchbeard Class
+ */
+class couchbeard_widget extends WP_Widget {
+
+    /**
+     * Plugin version, used for cache-busting of style and script file references.
+     *
+     * @var     string
+     */
+    const VERSION = '0.1';
+
+    /**
+     * Instance of this class.
+     *
+     * @var      object
+     */
+    protected static $instance = null;
+    
+    protected static $apps = array();
+    protected static $styles = array('default', 'dark', 'custom');
+
+    /**
+     * Initialize the plugin by registering widget and loading public scripts
+     *
+     */ 
+    public function __construct() {
+        // Register Widget On Widgets Init
+        add_action( 'widgets_init', array( $this, 'register_widget' ) );
+        
+        self::$apps = CouchBeardPlugin::getAllApps();
+
+        $widget_options = array(
+            'classname'   => 'couchbeard',
+            'description' => __( 'A widget that displays couchbeard functionality', 'couchbeard' )
+        );      
+        
+        parent::__construct( 'couchbeard', __('Couchbeard', 'couchbeard'), $widget_options );
+    }
+
+    /**
+     * Return an instance of this class.
+     *
+     * @return    object    A single instance of this class.
+     */
+    public static function get_instance() {
+
+        // If the single instance hasn't been set, set it now.
+        if ( null == self::$instance ) {
+            self::$instance = new self;
+        }
+
+        return self::$instance;
+    }
+
+    /**
+     * Register widget on windgets init
+     *
+     * @return void
+     */
+    public function register_widget() {
+        register_widget( __CLASS__ );
+    }
+    
+    /**
+     * The Public view of the Widget  
+     *
+     * @return mixed
+     */ 
+    public function widget( $args, $instance ) {
+        extract( $args );
+
+        //Our variables from the widget settings.
+        $title = isset ( $instance['title'] ) ? $instance['title'] : false;
+        $search = isset( $instance['search'] ) ? $instance['search'] : true;
+        $apps = isset( $instance['apps'] ) ? $instance['apps'] : array();
+        $row_sm = isset( $instance['row_sm'] ) ? $instance['row_sm'] : 1;
+        $row_md = isset( $instance['row_md'] ) ? $instance['row_md'] : 3;
+        $row_lg = isset( $instance['row_lg'] ) ? $instance['row_lg'] : 3;
+        $style = isset( $instance['style'] ) ? $instance['style'] : 'default';
+        $loadBS = isset( $instance['loadbs'] ) ? $instance['loadbs'] : true;
+
+        echo $before_widget;
+
+        //include the template based on user choice
+        $this->template( $title, $search, $apps, $row_sm, $row_md, $row_lg, $style, $loadBS );
+        
+        echo $after_widget;
+    }
+
+    /**
+     * Update the widget settings 
+     *
+     * @param    array    $new_instance    New instance values
+     * @param    array    $old_instance    Old instance values   
+     *
+     * @return array
+     */
+    public function update( $new_instance, $old_instance ) {
+        $instance = $old_instance;
+
+        //Strip tags from title and name to remove HTML 
+        $instance['title'] = $new_instance['title'];
+        $instance['search'] = $new_instance['search'];
+        $instance['apps'] = $new_instance['apps'];
+        $instance['row_sm'] = $new_instance['row_sm'];
+        $instance['row_md'] = $new_instance['row_md'];
+        $instance['row_lg'] = $new_instance['row_lg'];
+        $instance['style'] = $new_instance['style'];
+        $instance['loadbs'] = $new_instance['loadbs'];
+
+        return $instance;
+    }
+
+    /**
+     * Widget Settings Form
+     *
+     * @return mixed
+     */ 
+    public function form( $instance ) {
+
+        //Set up some default widget settings.
+        $defaults = array(
+            'title'     => 'CouchBeard',
+            'search'    => true,
+            'apps'      => self::$apps,
+            'row_sm'    => 3,
+            'row_md'    => 3,
+            'row_lg'    => 3,    
+            'style'     => self::$styles,
+            'loadbs'    => true
+        );
+        $instance = wp_parse_args( (array) $instance, $defaults );
+        if (!isset($instance['apps'][0])) {
+            $instance['apps'] = $instance['apps'][''];
+        }
+        $rows = count(self::$apps);
+    ?>
+        <p>
+            <label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e('Title', 'couchbeard'); ?></label>
+            <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" value="<?php echo $instance['title']; ?>" />
+            <hr>
+        </p>
+        <p>
+            <label for="<?php echo $this->get_field_id('search'); ?>"><?php _e('Search', 'couchbeard'); ?></label>
+            <input class="widefat" id="<?php echo $this->get_field_id( 'search' ); ?>" name="<?php echo $this->get_field_name( 'search' ); ?>" type="checkbox" value="1" <?php checked( true, $instance['search']); ?> />
+            <hr>
+        </p>
+        <p>
+            <label for="<?php echo $this->get_field_id('apps'); ?>"><?php _e('Apps', 'couchbeard'); ?></label>
+            <select class="widefat" name="<?php echo $this->get_field_name( 'apps' ); ?>[]" id="<?php echo $this->get_field_id( 'apps' ); ?>" multiple>
+                <?php foreach (self::$apps as $key => $app): ?>
+                    <option value="<?php echo $key; ?>"<?php echo (isset($instance['apps']) && in_array($key, $instance['apps']) ? ' selected="selected"' : ''); ?>><?php echo $app; ?></option>
+                <?php endforeach; ?>
+            </select>
+            <hr>
+        </p>
+        <p>
+            <label for="<?php echo $this->get_field_id('row'); ?>"><?php _e('Apps per row', 'couchbeard'); ?></label>
+            <div style="overflow: hidden">
+                <div>
+                    <span style="width: 33%; float: left"><?php _e('Small screens', 'couchbeard'); ?></span>
+                    <span style="width: 33%; float: left"><?php _e('Medium screens', 'couchbeard'); ?></span>
+                    <span style="width: 33%; float: left"><?php _e('Large screens', 'couchbeard'); ?></span>
+                </div>
+                <div>
+                    <select style="width: 33%; float: left" name="<?php echo $this->get_field_name( 'row_sm' ); ?>" id="<?php echo $this->get_field_id( 'row_sm' ); ?>">
+                        <?php for ($i = 1; $i <= $rows; $i++): ?>
+                            <option value="<?php echo $i; ?>"<?php echo ($i == $instance['row_sm'] ? ' selected="selected"' : ''); ?>><?php echo $i; ?></option>
+                        <?php endfor; ?>
+                    </select>                    
+                    <select style="width: 33%; float: left" name="<?php echo $this->get_field_name( 'row_md' ); ?>" id="<?php echo $this->get_field_id( 'row_md' ); ?>">
+                        <?php for ($i = 1; $i <= $rows; $i++): ?>
+                            <option value="<?php echo $i; ?>"<?php echo ($i == $instance['row_md'] ? ' selected="selected"' : ''); ?>><?php echo $i; ?></option>
+                        <?php endfor; ?>
+                    </select>                    
+                    <select style="width: 33%; float: left" name="<?php echo $this->get_field_name( 'row_lg' ); ?>" id="<?php echo $this->get_field_id( 'row_lg' ); ?>">
+                        <?php for ($i = 1; $i <= $rows; $i++): ?>
+                            <option value="<?php echo $i; ?>"<?php echo ($i == $instance['row_lg'] ? ' selected="selected"' : ''); ?>><?php echo $i; ?></option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+            </div>
+            <hr>
+        </p>
+        <p>
+            <label for="<?php echo $this->get_field_id('style'); ?>"><?php _e('Design', 'couchbeard'); ?></label>
+            <select name="<?php echo $this->get_field_name( 'style' ); ?>" id="<?php echo $this->get_field_id( 'style' ); ?>">
+                <?php foreach(self::$styles as $s): ?>
+                    <option value="<?php echo $s; ?>"<?php echo ($s == $instance['style'] ? ' selected="selected"' : ''); ?>><?php echo $s; ?></option>
+                <?php endforeach; ?>
+            </select>
+            <hr>
+        </p>
+        <p>
+            <label for="<?php echo $this->get_field_id('loadbs'); ?>"><?php _e('Load Bootstrap', 'couchbeard'); ?></label>
+            <input class="widefat" id="<?php echo $this->get_field_id( 'loadbs' ); ?>" name="<?php echo $this->get_field_name( 'loadbs' ); ?>" type="checkbox" value="1" <?php checked( true, $instance['loadbs']); ?> />
+            <hr>
+        </p>
+        
+        <p class="pressthis"><a target="_blank" title="Donate, It Feels Great" href="#"><span>Donate, It Feels Great!</span></a></p>        
+        <?php
+    }
+
+
+    /**
+     * Function to display Templates for widget
+     *
+     * @param    string    $template    The input to be sanitised
+     * @param    array     $data_arr    The input to be sanitised
+     * @param    string    $link_to     The input to be sanitised        
+     *
+     * @include file templates
+     *
+     * return void
+     */
+    private function template( $title, $search, $apps, $row_sm, $row_md, $row_lg, $style, $loadBS ) {
+        if (!empty($title)) {
+            echo '<center><h3>' . $title . '</h3></center>';
+        }
+        if ($style != 'custom') {
+            wp_register_style('style_' . $style, plugins_url( 'css/style_' . $style . '.css' , __FILE__ ));
+            wp_enqueue_style('style_' . $style);
+            wp_enqueue_style('fancyinput_style' . $style);
+            wp_enqueue_script( 'fancyinput_script' );
+            wp_register_script( 'cb_style_js', plugins_url('js/style_js.js', __FILE__ ), array('jquery', 'fancyinput'), '1.0', true );
+            wp_enqueue_script( 'cb_style_js' );
+        }
+        if ($loadBS) {
+            $bootstrap_scripts = array(
+                'transition', //modal
+                'alert',
+                'button',
+                //'carousel',
+                'collapse', //search
+                'dropdown', //menu
+                'modal', 
+                'scrollspy',
+                //'tab',
+                'tooltip',
+                'popover'
+                //'affix'
+            );
+            foreach($bootstrap_scripts as $bootscript) {
+                wp_register_script( $bootscript, plugins_url('js/bootstrap/'.$bootscript.'.js', __FILE__ ), array('jquery'), '3.1.1', true );
+                wp_enqueue_script( $bootscript );
+            }
+            wp_register_style('bs_style' . $style, plugins_url( 'css/bootstrap/bootstrap.css' , __FILE__ ));
+            wp_enqueue_style('bs_style' . $style);
+        }
+        $search_file = plugin_dir_path( __FILE__ ) . 'views/search.php';
+        if( file_exists( $search_file ) ){
+
+            include $search_file;
+    
+        } else {
+            printf(__('Error loading %s.', 'couchbeard'), $search_file);
+        }
+        $apps_name = array();
+        if (!isset($apps[0])) {
+            $apps = $apps[''];
+        }
+        foreach ($apps as $app) {
+            if (!isset(self::$apps[intval($app)])) {
+                continue;
+            }
+            $apps_name[] = self::$apps[intval($app)];
+            $app = strtolower(self::$apps[intval($app)]);
+            $app_file = plugin_dir_path( __FILE__ ) . $app . '.php';
+            if (file_exists($app_file)) {
+                //include $app_file;
+            } else {
+                printf(__('Error loading %s.', 'couchbeard'), $app_file);
+                continue;
+            }
+
+            wp_register_script( $app, plugins_url('js/' . $app . '.js', __FILE__ ), array('jquery'), '1.0', true );
+            $translation_array = array(
+                'ajaxurl' => admin_url( 'admin-ajax.php' ),
+                'loadmore' => __('Load more...', 'couchbeard')
+                //'token' => wp_create_nonce(self::TOKEN_PREFIX),
+            );
+            wp_localize_script( $app, 'wp_' . $app, $translation_array );
+            wp_enqueue_script( $app );
+
+        }
+
+        $apps_file = plugin_dir_path( __FILE__ ) . 'views/apps.php';
+        if( file_exists( $apps_file ) ) {
+
+            include $apps_file;
+    
+        } else {
+            printf(__('Error loading %s.', 'couchbeard'), $apps_file);
+        }
+    }
+
+} // end of widget
+
+// SEARCH
+function myprefix_autocomplete_init() {  
+    // Register our jQuery UI style and our custom javascript file  
+    wp_register_style('myprefix-jquery-ui','http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css');
+    wp_register_script( 'cb_search', plugins_url('js/search.js', __FILE__ ), array('jquery', 'jquery-ui-autocomplete'), '1.0', true );
+    wp_localize_script( 'cb_search', 'cb_search', array('url' => admin_url( 'admin-ajax.php' )));  
+    // Function to fire whenever search form is displayed  
+    wp_enqueue_script( 'cb_search' );  
+    wp_enqueue_style( 'myprefix-jquery-ui' );
+  
+    // Functions to deal with the AJAX request - one for logged in users, the other for non-logged in users.  
+    add_action( 'wp_ajax_myprefix_autocompletesearch', 'myprefix_autocomplete_suggestions' );
+    add_action( 'wp_ajax_nopriv_myprefix_autocompletesearch', 'myprefix_autocomplete_suggestions' );  
+}
+add_action( 'init', 'myprefix_autocomplete_init' );    
+
+function myprefix_autocomplete_suggestions() {
+    //$url = "http://www.omdbapi.com/?s=" . urlencode($_REQUEST['term']);
+    //$url = "http://imdbapi.org/?q=" . $_REQUEST['term'] . "&episode=0&limit=10";
+    $search = str_replace(array(" ", "(", ")"), array("_", "", ""), $_REQUEST['term']); //format search term
+    $firstchar = substr($search,0,1); //get first character
+    $url = "http://sg.media-imdb.com/suggests/${firstchar}/${search}.json"; //format IMDb suggest URL
+    $imdb = curl_download($url);
+    preg_match('/^imdb\$.*?\((.*?)\)$/ms', $imdb, $matches); //convert JSONP to JSON
+
+    if(!$_SERVER["HTTP_X_REQUESTED_WITH"] || !$_GET['term']) {
+        echo __('error', 'couchbeard') . __LINE__;
+        exit();
+    }
+
+    $json = $matches[1];
+    $arr = json_decode($json, true);
+
+    $suggestions = array();  
+
+    if(isset($arr['d'])) {
+        foreach ($arr['d'] as $data) {
+            if ($data['q'] == "feature" || $data['q'] == "TV series") {
+                $suggestion = array();
+                $img = preg_replace('/_V1_.*?.jpg/ms', "_V1._SY50.jpg", $data['i'][0]);
+                $string = (strlen($data['l']) > 50) ? substr($data['l'], 0, 45).'...' : $data['l'];
+                $searchpage = get_page_by_title( 'Search' );
+                $suggestion['searchpageid'] = '#';
+                $suggestion['imdbid'] = (string) $data['id'];
+                $suggestion['label'] = $data['l'];
+                $suggestion['title'] = $string;
+                $suggestion['year'] = $data['y'];
+                $suggestion['type'] = $data['q'];
+                $suggestion['image'] = (empty($img)) ? IMAGES . '/no_cover.png' : $img;
+                $suggestions[] = $suggestion;
+            }
+        }
+    } else {
+        $suggestion = array();
+        $suggestion['imdbid'] = -1;
+        $suggestion['title'] = __('No results', 'couchbeard');
+        $suggestions[] = $suggestion;
+    }
+
+    echo $_GET["callback"] . "(" . json_encode($suggestions) . ")";
+    exit();
 }
 
 /*function setFooter() {

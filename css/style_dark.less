@@ -1,0 +1,372 @@
+@import "bootstrap/bootstrap.less";
+@import "fancyinput.less";
+
+@font-face {
+  font-family: 'DIN';
+  font-style: normal;
+  font-weight: 400;
+  /*src: local('DIN Next LT Pro Regular'), url(../fonts/DINNextLTPro-Regular.otf);*/
+  src: url(../fonts/DINNextLTPro-Regular.otf);
+}
+@font-face {
+  font-family: 'DIN';
+  font-style: italic;
+  font-weight: 400;
+  src: url(../fonts/DINNextLTPro-Italic.otf);
+}
+
+@font-face {
+  font-family: 'DIN Light';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/DINNextLTPro-Light.otf);
+}
+@font-face {
+  font-family: 'DIN Light';
+  font-style: italic;
+  font-weight: 400;
+  src: url(../fonts/DINNextLTPro-LightItalic.otf);
+}
+
+@font-face {
+  font-family: 'DIN UltraLight';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/DINNextLTPro-UltraLight.otf);
+}
+@font-face {
+  font-family: 'DIN UltraLight';
+  font-style: italic;
+  font-weight: 400;
+  src: url(../fonts/DINNextLTPro-UltraLightIt.otf);
+}
+
+/* ==========================================================================
+   Variables
+   ========================================================================== */
+@DIN: 'DIN ', sans-serif;
+@Light: 'DIN Light',sans-serif;
+@UltraLight: 'DIN UltraLight', sans-serif;
+
+.box-shadow (@string) {
+	-webkit-box-shadow: @string;
+	-moz-box-shadow:    @string;
+	-o-box-shadow:    	@string;
+	box-shadow:         @string;
+}
+
+.blur (@b) {
+	-webkit-filter: blur(@b);
+	-moz-filter: blur(@b);
+	-o-filter: blur(@b);
+	-ms-filter: blur(@b);
+	filter: blur(@b);
+}
+
+@grey: #333;
+@darkgrey: darken(@grey, 5%);
+@lightgrey: lighten(@grey, 20%);
+
+
+
+/* ==========================================================================
+   General
+   ========================================================================== */
+
+* {
+	font-family: @DIN;
+	color: #fff;
+}
+p.lead {
+	font-family: @Light;
+}
+footer {
+	background-color: @darkgrey;
+	margin-top: 50px;
+	padding: 10px 10px 30px 10px;
+}
+
+html, body {
+	background-color: @grey;
+	color: #fff;
+}
+
+h1, h2, h3 {
+	color: #fff;
+}
+.sidebar-offcanvas {
+	color: #fff;
+}
+.box {
+	bottom: 0; /* increase for footer use */
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    background-color:#444444;
+}
+
+.blur {
+	.blur(2px);
+}
+
+#main {
+	margin-top: 30px;
+}
+
+.lead.nomargin {
+	margin: 0;
+}
+.nolink {
+	color: #000;
+	&:active, &:visited, &:hover {
+		text-decoration: none;
+		color: #000;
+	}
+}
+
+.panel, .data {
+	background-color: @grey;
+	border-color: @darkgrey;
+	color: #fff;
+	.list-group {
+		margin-bottom: 0;
+		background-color: @grey;
+		border-color: @darkgrey;
+		color: #fff;
+		.list-group-item {
+			background-color: @grey;
+			border-color: @darkgrey;
+			color: #fff;
+
+			.list-group-item-heading {
+				color: #fff;
+			}
+
+			.list-group-item-text {
+				color: @lightgrey;
+				span, i, time {
+					color: @lightgrey;
+				}
+			}
+
+			&:hover {
+				background-color: @darkgrey;
+			}
+		}
+	}
+}
+
+.list-group-item-heading {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+.list-group-item-text {
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.loadmore p {
+	color: #ccc;
+}
+
+.thumbnail {
+	background-color: @grey;
+	// border: 2px dashed #ddd;
+	border: none;
+	overflow: hidden;
+	box-shadow: 0 1px 0 @grey,0 2px 4px @darkgrey inset,0 0 12px @grey;
+	// background: -webkit-linear-gradient(92deg,#f35626,#feab3a);
+	// background-repeat: no-repeat;
+	//-webkit-animation: hue 60s infinite linear;
+	
+	.update {
+		padding: 2px;
+	}
+
+	img {
+		width: 298px;
+		height: 168px;
+	}
+}
+
+.panel-default>.panel-heading {
+	background-color: transparent;
+}
+.panel-title {
+	text-align: center;
+	font-family: @DIN;
+	color: #fff;
+}
+
+i.greyout {
+	color: @lightgrey;
+}
+
+.cover {
+	background-size: contain;
+	height: 240px;
+	width: 160px;
+	background-repeat: no-repeat;
+	border-radius: 5px;
+	overflow: hidden;
+	margin-right: 10px;
+	margin-bottom: 10px;
+}
+
+span.quality {
+	color: #aaa;
+	border: 1px solid #aaa;
+	border-radius: 5px;
+	padding: 5px;
+}
+
+.rating {
+  unicode-bidi: bidi-override;
+  direction: rtl;
+}
+.rating > span {
+  display: inline-block;
+  position: relative;
+  width: 1.1em;
+}
+.rating > span.active:before,
+.rating > span.active ~ span:before {
+   content: "\2605";
+   position: absolute;
+}
+
+.search {
+	margin-bottom: 20px;
+}
+.fancyInput {
+	width: 100%;
+	max-width: 100% !important;
+	font-size: 30px !important;
+	height: 50px;
+	background: @grey !important;
+	color: #000 !important;
+	box-shadow: 0 1px 0 @grey,0 2px 4px @darkgrey inset,0 0 12px @grey !important;
+
+	.empty {
+		color: #fff;
+	}
+
+	.caret {
+		border: none;
+		color: #fff;
+		background: #fff;
+	}
+	input {
+		color: transparent;
+	}
+}
+
+.box {
+    background-color: @grey;
+}
+
+#sidebar {
+  padding:0px;
+	padding-top:15px;
+	overflow: hidden;
+}
+.nav.toggler {
+	margin-bottom: 10px;
+}
+
+#sidebar, #sidebar a, #sidebar-footer a {
+    color:#ffffff;
+    background-color: @darkgrey;
+	  text-shadow:0 0 2px #000000;
+    padding-left:20px;
+}
+#sidebar .nav li>a:hover {
+    background-color: @grey;
+}
+#sidebar h3 {
+    margin:auto;
+    vertical-align:middle;
+    text-align:center;
+}
+#sidebar-footer-logo {
+  position:absolute;
+  bottom:0;
+  height: 27px;
+  width: 100%;
+  left: 0px;
+  margin-left: 0px;
+  background-repeat:no-repeat;
+  background-size:contain;
+}
+#footer {
+  margin-bottom:20px;
+}
+
+@media screen and (max-width: 768px) {
+  .row-offcanvas {
+    position: relative;
+    -webkit-transition: all 0.25s ease-out;
+    -moz-transition: all 0.25s ease-out;
+    transition: all 0.25s ease-out;
+  }
+
+  .row-offcanvas-left.active {
+    left: 33%;
+  }
+
+  .row-offcanvas-left.active .sidebar-offcanvas {
+    left: -33%;
+    position: absolute;
+    top: 0;
+    width: 33%;
+  }
+
+  #sidebar, #sidebar a {
+    padding-left:3px;
+  }
+}
+
+.modal .modal-content {
+	background-color: @darkgrey;
+}
+
+.loader {
+	color: #fff !important;
+    -webkit-animation:rotation 1.5s linear infinite;
+    -moz-animation:rotation 1.5s linear infinite;
+    animation:rotation 1.5s linear infinite;
+}
+.stopload {
+	-webkit-animation:rotation 1.5s linear 0 1 alternate;
+    -moz-animation:rotation 1.5s linear 0 1 alternate;
+    animation:rotation 1.5s linear 0 1 alternate;
+}
+@-webkit-keyframes rotation {
+    0% {-webkit-transform: rotate(0deg);}
+    25% {-webkit-transform: rotate(230deg);}
+
+    100%   {-webkit-transform: rotate(360deg);}
+}
+
+.fancyInput{ max-width:80%; min-width:50%; font-size:60px; color:#FFF; vertical-align:middle; line-height:1.3; overflow:hidden; text-align:left; box-shadow:0 1px 0 rgba(255,255,255,.15), 0 2px 4px rgba(0,0,0,.2) inset, 0 0 12px rgba(255,255,255,.1); padding:8px 20px; background:rgba(0,0,0,.1); border-radius:10px; }
+
+@-webkit-keyframes hue {
+  from {
+    -webkit-filter: hue-rotate(0deg);
+  }
+
+  to {
+    -webkit-filter: hue-rotate(-360deg);
+  }
+}
+
+.table {
+	td {
+		white-space: pre;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 20px;
+	}
+}

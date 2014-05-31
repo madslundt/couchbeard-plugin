@@ -24,8 +24,11 @@ abstract class couchbeard
 		$this->setApp();
 		if (!$this->isAlive())
 			throw new Exception($this->app . " is not alive.");
-
-		$this->url = self::retrieveURL($this->app);
+		try {
+			$this->url = self::retrieveURL($this->app);
+		} catch(Exception $e) {
+			printf(__('%s is not online', 'couchbeard'), $this->app);
+		}
 	}
 
 	/**
@@ -59,9 +62,12 @@ abstract class couchbeard
 	 * Checks if the application is online
 	 * @return boolean online
 	 */
-	public function isAlive() 
+	protected function isAlive() 
 	{
-		return self::isAppAlive($this->app);
+		try {
+			return self::isAppAlive($this->app);
+		} catch(Exception $e) {}
+		return false;
 	}
 
 	/**
@@ -225,31 +231,35 @@ abstract class couchbeard
 	public static function isAppAlive($app) 
 	{
 	    $header = '';
-	    switch(strtolower($app))
-	    {
-	        case 'couchpotato':
-	        case 'cp':
-	            $url = self::retrieveURL($app) . '/app.available';
-	            break;
-	        case 'sickbeard':
-	        case 'sb':
-	            $url = self::retrieveURL($app);
-	            break;
-	        case 'sabnzbd':
-	        case 'sab':
-	            $url = self::retrieveURL($app);
-	            break;
-	        case 'xbmc':
-	            $url = self::retrieveURL($app);
-	            $xbmc = self::retrieveLogin($app);
-	            $header = array(
-	                'Content-Type: application/json',
-	                'Authorization: Basic ' . base64_encode($xbmc->username . ':' . $xbmc->password)
-	            );
-	            break;
-	        default:
-	            return false;
-	    }
+	    try {
+		    switch(strtolower($app))
+		    {
+		        case 'couchpotato':
+		        case 'cp':
+		            $url = self::retrieveURL($app) . '/app.available';
+		            break;
+		        case 'sickbeard':
+		        case 'sb':
+		            $url = self::retrieveURL($app);
+		            break;
+		        case 'sabnzbd':
+		        case 'sab':
+		            $url = self::retrieveURL($app);
+		            break;
+		        case 'xbmc':
+		            $url = self::retrieveURL($app);
+		            $xbmc = self::retrieveLogin($app);
+		            $header = array(
+		                'Content-Type: application/json',
+		                'Authorization: Basic ' . base64_encode($xbmc->username . ':' . $xbmc->password)
+		            );
+		            break;
+		        default:
+		            return false;
+		    }
+	    } catch(Exception $e) {
+			//printf(__('%s is not online', 'couchbeard'), $app);
+		}
 	    
 	    if (!(self::curl_download($url, $header)))
 	        return false;
