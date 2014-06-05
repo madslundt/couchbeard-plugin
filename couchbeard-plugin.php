@@ -249,6 +249,8 @@ class couchbeard_widget extends WP_Widget {
     protected static $apps = array();
     protected static $styles = array('default', 'dark', 'custom');
 
+    const APP_DOMAIN = 'app_';
+
     /**
      * Initialize the plugin by registering widget and loading public scripts
      *
@@ -258,6 +260,13 @@ class couchbeard_widget extends WP_Widget {
         add_action( 'widgets_init', array( $this, 'register_widget' ) );
         
         self::$apps = CouchBeardPlugin::getAllApps();
+
+        if (is_admin()) {
+            add_action( 'wp_admin_enqueue_scripts', function() {
+                wp_enqueue_script('jquery');
+                wp_enqueue_script('jquery-ui-draggable');
+            } );
+        }
 
         $widget_options = array(
             'classname'   => 'couchbeard',
@@ -290,6 +299,11 @@ class couchbeard_widget extends WP_Widget {
     public function register_widget() {
         register_widget( __CLASS__ );
     }
+
+    /*public function private_enqueue() {
+        wp_localize_script( 'admin_functions', 'admin', array('imgpath' => plugins_url( '/img', __FILE__ )) );
+        wp_enqueue_script('admin_functions', plugins_url( 'js/admin.js', __FILE__ ), array('jquery', 'jquery-ui-draggable'), '1.0', true);
+    }*/
     
     /**
      * The Public view of the Widget  
@@ -302,7 +316,14 @@ class couchbeard_widget extends WP_Widget {
         //Our variables from the widget settings.
         $title = isset ( $instance['title'] ) ? $instance['title'] : false;
         $search = isset( $instance['search'] ) ? $instance['search'] : true;
-        $apps = isset( $instance['apps'] ) ? $instance['apps'] : array();
+        $apps = isset( $instance['apps'] ) ? $instance['apps'] : self::$apps;
+        
+        // Creating variables for all apps
+        /*foreach(self::$apps as $app) {
+            $app = strtolower($app);
+            extract(array('app_' . $app => (isset($instance['app_' . $app]) ? $instance['app_' . $app] : -1)));
+        }*/
+
         $row_sm = isset( $instance['row_sm'] ) ? $instance['row_sm'] : 1;
         $row_md = isset( $instance['row_md'] ) ? $instance['row_md'] : 3;
         $row_lg = isset( $instance['row_lg'] ) ? $instance['row_lg'] : 3;
@@ -311,8 +332,12 @@ class couchbeard_widget extends WP_Widget {
 
         echo $before_widget;
 
+        if ($title) {
+            echo $before_title . $title . $after_title;
+        }
+
         //include the template based on user choice
-        $this->template( $title, $search, $apps, $row_sm, $row_md, $row_lg, $style, $loadBS );
+        $this->template($search, $apps, $row_sm, $row_md, $row_lg, $style, $loadBS );
         
         echo $after_widget;
     }
@@ -329,9 +354,16 @@ class couchbeard_widget extends WP_Widget {
         $instance = $old_instance;
 
         //Strip tags from title and name to remove HTML 
-        $instance['title'] = $new_instance['title'];
+        $instance['title'] = strip_tags($new_instance['title']);
         $instance['search'] = $new_instance['search'];
-        $instance['apps'] = $new_instance['apps'];
+        $instance['apps'] = explode(', ', $new_instance['apps']);
+        
+        // Creating variables for all apps
+        /*foreach(self::$apps as $app) {
+            $app = strtolower($app);
+            extract(array(self::APP_DOMAIN . $app => $new_instance[self::APP_DOMAIN . $app]));
+        }*/
+
         $instance['row_sm'] = $new_instance['row_sm'];
         $instance['row_md'] = $new_instance['row_md'];
         $instance['row_lg'] = $new_instance['row_lg'];
@@ -347,7 +379,9 @@ class couchbeard_widget extends WP_Widget {
      * @return mixed
      */ 
     public function form( $instance ) {
-
+        //wp_localize_script( 'couchbeard_admin_functions', 'admin', array('imgpath' => plugins_url( '/img', __FILE__ ), 'apps_id' => $this->get_field_id('cb_apps')) );
+        //wp_enqueue_script('couchbeard_admin_functions', plugins_url( 'js/admin.js', __FILE__ ), array('jquery', 'jquery-ui-draggable'), '1.0');
+        
         //Set up some default widget settings.
         $defaults = array(
             'title'     => 'CouchBeard',
@@ -358,76 +392,167 @@ class couchbeard_widget extends WP_Widget {
             'row_lg'    => 3,    
             'style'     => self::$styles,
             'loadbs'    => true
-        );
+        );        /*foreach (self::$apps as $app) {
+            $app = strtolower($app);
+            $defaults[self::APP_DOMAIN . $app] = -1;
+        }*/
         $instance = wp_parse_args( (array) $instance, $defaults );
-        if (!isset($instance['apps'][0])) {
-            $instance['apps'] = $instance['apps'][''];
-        }
+        //$instance['apps'] = isset($instance['apps']) ? explode(', ', $instance['apps']) : array();
         $rows = count(self::$apps);
     ?>
-        <p>
-            <label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e('Title', 'couchbeard'); ?></label>
-            <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" value="<?php echo $instance['title']; ?>" />
-            <hr>
-        </p>
-        <p>
-            <label for="<?php echo $this->get_field_id('search'); ?>"><?php _e('Search', 'couchbeard'); ?></label>
-            <input class="widefat" id="<?php echo $this->get_field_id( 'search' ); ?>" name="<?php echo $this->get_field_name( 'search' ); ?>" type="checkbox" value="1" <?php checked( true, $instance['search']); ?> />
-            <hr>
-        </p>
-        <p>
-            <label for="<?php echo $this->get_field_id('apps'); ?>"><?php _e('Apps', 'couchbeard'); ?></label>
-            <select class="widefat" name="<?php echo $this->get_field_name( 'apps' ); ?>[]" id="<?php echo $this->get_field_id( 'apps' ); ?>" multiple>
-                <?php foreach (self::$apps as $key => $app): ?>
-                    <option value="<?php echo $key; ?>"<?php echo (isset($instance['apps']) && in_array($key, $instance['apps']) ? ' selected="selected"' : ''); ?>><?php echo $app; ?></option>
-                <?php endforeach; ?>
-            </select>
-            <hr>
-        </p>
-        <p>
-            <label for="<?php echo $this->get_field_id('row'); ?>"><?php _e('Apps per row', 'couchbeard'); ?></label>
-            <div style="overflow: hidden">
+
+        <style type="text/css">
+            .couchbeard-widget .box {
+                padding: 10px;
+                border-radius: 3px;
+                width: auto;
+                background-color: #fff;
+                display: inline-flex;
+                margin: 0 5px;
+                -moz-box-shadow: inset 0 0 5px #888;
+                -webkit-box-shadow: inset 0 0 5px#888;
+                box-shadow: inset 0 0 5px #888;
+            }
+            .couchbeard-widget .box:first-child {
+                margin-left: 0;
+            }
+            .couchbeard-widget .box:last-child {
+                margin-right: 0;
+            }
+            .couchbeard-widget .box img {
+                width: 60px;
+                height: 34px;
+            }
+            .couchbeard-widget .snaptarget {
+                min-height: 40px;
+                margin-top: 5px;
+            }
+            .couchbeard-widget select {
+                width: 100%;
+            }
+            .couchbeard-widget ul li {
+                display: inline-block;
+            }
+            .couchbeard-widget .app_check li {
+                width: 32%;
+            }
+            .couchbeard-widget .none {
+                display: none;
+            }
+        </style>
+        <div class="couchbeard-widget" id="<?php echo $this->get_field_id('cb'); ?>">
+            <p>
+                <label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e('Title', 'couchbeard'); ?></label>
+                <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" value="<?php echo $instance['title']; ?>" />
+                <hr>
+            </p>
+            <p>
+                <label for="<?php echo $this->get_field_id('search'); ?>"><?php _e('Search', 'couchbeard'); ?></label>
+                <input class="widefat" id="<?php echo $this->get_field_id( 'search' ); ?>" name="<?php echo $this->get_field_name( 'search' ); ?>" type="checkbox" value="1" <?php checked( true, $instance['search']); ?> />
+                <hr>
+            </p>
+            <p>
+                <label for="<?php echo $this->get_field_id('apps'); ?>"><?php _e('Apps', 'couchbeard'); ?></label>
+                <ul class="app_check">
+                        <?php foreach (self::$apps as $app): ?>
+                            <li><input data-app="<?php echo $app; ?>" value="<?php echo $app; ?>" type="checkbox"<?php echo (isset($instance['apps']) && in_array($app, $instance['apps']) ? ' checked' : ''); ?> /><?php echo $app; ?></li>
+                        <?php endforeach; ?>
+                </ul>
+                <ul class="snaptarget">
+                    <?php if (isset($instance['apps'])): ?>
+                        <?php foreach ($instance['apps'] as $app):  ?>
+                            <?php if (!empty($app)): ?>
+                                <li data-app="<?php echo $app; ?>" title="<?php echo $app; ?>" class="draggable box <?php echo strtolower($app); ?>">
+                                    <img src="<?php echo plugins_url( '/img/' . $app . '-min.png', __FILE__ ); ?>" alt="<?php echo $app; ?>" />
+                                </li>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                    <input type="hidden" value="<?php echo !empty($instance['apps']) ? implode(', ', $instance['apps']) : ''; ?>" name="<?php echo $this->get_field_name( 'apps' ); ?>" id="<?php echo $this->get_field_id( 'apps' ); ?>" />
+                </ul>
+                <hr>
+            </p>
+            <p>
+                <label for="<?php echo $this->get_field_id('row'); ?>"><?php _e('Apps per row', 'couchbeard'); ?></label>
                 <div>
-                    <span style="width: 33%; float: left"><?php _e('Small screens', 'couchbeard'); ?></span>
-                    <span style="width: 33%; float: left"><?php _e('Medium screens', 'couchbeard'); ?></span>
-                    <span style="width: 33%; float: left"><?php _e('Large screens', 'couchbeard'); ?></span>
+                    <ul>
+                        <li><?php _e('Small screens', 'couchbeard'); ?>
+                        <select name="<?php echo $this->get_field_name( 'row_sm' ); ?>" id="<?php echo $this->get_field_id( 'row_sm' ); ?>">
+                            <?php for ($i = 1; $i <= $rows; $i++): ?>
+                                <option value="<?php echo $i; ?>"<?php echo ($i == $instance['row_sm'] ? ' selected="selected"' : ''); ?>><?php echo $i; ?></option>
+                            <?php endfor; ?>
+                        </select>
+                        </li>
+                        <li><?php _e('Medium screens', 'couchbeard'); ?>        
+                        <select name="<?php echo $this->get_field_name( 'row_md' ); ?>" id="<?php echo $this->get_field_id( 'row_md' ); ?>">
+                            <?php for ($i = 1; $i <= $rows; $i++): ?>
+                                <option value="<?php echo $i; ?>"<?php echo ($i == $instance['row_md'] ? ' selected="selected"' : ''); ?>><?php echo $i; ?></option>
+                            <?php endfor; ?>
+                        </select> 
+                        </li>
+                        <li><?php _e('Large screens', 'couchbeard'); ?>                   
+                        <select name="<?php echo $this->get_field_name( 'row_lg' ); ?>" id="<?php echo $this->get_field_id( 'row_lg' ); ?>">
+                            <?php for ($i = 1; $i <= $rows; $i++): ?>
+                                <option value="<?php echo $i; ?>"<?php echo ($i == $instance['row_lg'] ? ' selected="selected"' : ''); ?>><?php echo $i; ?></option>
+                            <?php endfor; ?>
+                        </select>
+                        </li>
+                    </ul>
                 </div>
-                <div>
-                    <select style="width: 33%; float: left" name="<?php echo $this->get_field_name( 'row_sm' ); ?>" id="<?php echo $this->get_field_id( 'row_sm' ); ?>">
-                        <?php for ($i = 1; $i <= $rows; $i++): ?>
-                            <option value="<?php echo $i; ?>"<?php echo ($i == $instance['row_sm'] ? ' selected="selected"' : ''); ?>><?php echo $i; ?></option>
-                        <?php endfor; ?>
-                    </select>                    
-                    <select style="width: 33%; float: left" name="<?php echo $this->get_field_name( 'row_md' ); ?>" id="<?php echo $this->get_field_id( 'row_md' ); ?>">
-                        <?php for ($i = 1; $i <= $rows; $i++): ?>
-                            <option value="<?php echo $i; ?>"<?php echo ($i == $instance['row_md'] ? ' selected="selected"' : ''); ?>><?php echo $i; ?></option>
-                        <?php endfor; ?>
-                    </select>                    
-                    <select style="width: 33%; float: left" name="<?php echo $this->get_field_name( 'row_lg' ); ?>" id="<?php echo $this->get_field_id( 'row_lg' ); ?>">
-                        <?php for ($i = 1; $i <= $rows; $i++): ?>
-                            <option value="<?php echo $i; ?>"<?php echo ($i == $instance['row_lg'] ? ' selected="selected"' : ''); ?>><?php echo $i; ?></option>
-                        <?php endfor; ?>
-                    </select>
-                </div>
-            </div>
-            <hr>
-        </p>
-        <p>
-            <label for="<?php echo $this->get_field_id('style'); ?>"><?php _e('Design', 'couchbeard'); ?></label>
-            <select name="<?php echo $this->get_field_name( 'style' ); ?>" id="<?php echo $this->get_field_id( 'style' ); ?>">
-                <?php foreach(self::$styles as $s): ?>
-                    <option value="<?php echo $s; ?>"<?php echo ($s == $instance['style'] ? ' selected="selected"' : ''); ?>><?php echo $s; ?></option>
-                <?php endforeach; ?>
-            </select>
-            <hr>
-        </p>
-        <p>
-            <label for="<?php echo $this->get_field_id('loadbs'); ?>"><?php _e('Load Bootstrap', 'couchbeard'); ?></label>
-            <input class="widefat" id="<?php echo $this->get_field_id( 'loadbs' ); ?>" name="<?php echo $this->get_field_name( 'loadbs' ); ?>" type="checkbox" value="1" <?php checked( true, $instance['loadbs']); ?> />
-            <hr>
-        </p>
-        
-        <p class="pressthis"><a target="_blank" title="Donate, It Feels Great" href="#"><span>Donate, It Feels Great!</span></a></p>        
+                <hr>
+            </p>
+            <p>
+                <label for="<?php echo $this->get_field_id('style'); ?>"><?php _e('Design', 'couchbeard'); ?></label>
+                <select name="<?php echo $this->get_field_name( 'style' ); ?>" id="<?php echo $this->get_field_id( 'style' ); ?>">
+                    <?php foreach(self::$styles as $s): ?>
+                        <option value="<?php echo $s; ?>"<?php echo ($s == $instance['style'] ? ' selected="selected"' : ''); ?>><?php echo $s; ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <hr>
+            </p>
+            <p>
+                <label for="<?php echo $this->get_field_id('loadbs'); ?>"><?php _e('Load Bootstrap', 'couchbeard'); ?></label>
+                <input class="widefat" id="<?php echo $this->get_field_id( 'loadbs' ); ?>" name="<?php echo $this->get_field_name( 'loadbs' ); ?>" type="checkbox" value="1" <?php checked( true, $instance['loadbs']); ?> />
+                <hr>
+            </p>
+            
+            <p class="pressthis"><a target="_blank" title="Donate, It Feels Great" href="#"><span>Donate, It Feels Great!</span></a></p>    
+            <script>
+                $ = jQuery;
+                var imgpath = "<?php echo plugins_url( '/img', __FILE__ ); ?>";
+                var order = [<?php echo '"' . implode('", "', $instance['apps']) . '"'; ?>];
+                $(function() {
+                    $('#<?php echo $this->get_field_id("cb"); ?>').children('.snaptarget').sortable({
+                        cursor: "move"
+                    });
+                    $('#<?php echo $this->get_field_id("cb"); ?>').children('.snaptarget').disableSelection();
+
+                    $('#<?php echo $this->get_field_id("cb"); ?>').on('change', '.app_check input[type=checkbox]', function() {
+                        if ($(this).is(":checked")) {
+                            if ($(this).data('app')) {
+                                order.push($(this).data('app'));
+                                $('#<?php echo $this->get_field_id("cb"); ?>' + ' .snaptarget').append('<li data-app="' + $(this).data('app').toLowerCase() + '" title="' + $(this).data('app') + '" class="draggable box ' + $(this).data('app').toLowerCase() + '">' +
+                                                    '<img src="' + imgpath + '/' + $(this).data('app').toLowerCase() + '-min.png" alt="' + $(this).data('app') + '" />' +
+                                                '</li>');
+                            }
+                        } else {
+                            order.splice(order.indexOf($(this).data('app')), 1);
+                            $('#<?php echo $this->get_field_id("cb"); ?>' + ' .snaptarget .' + $(this).data('app').toLowerCase()).remove();
+                            
+                        }
+                        $('#<?php echo $this->get_field_id("cb"); ?>' + ' .snaptarget input[type=hidden]').val($.unique(order).join(', '));
+                    });
+
+                    $( '#<?php echo $this->get_field_id("cb"); ?>' + ' .snaptarget' ).on( 'sortstop', function( event, ui ) {
+                        order = [];
+                        $( '#<?php echo $this->get_field_id("cb"); ?>' + ' .snaptarget' ).children('li.draggable').each(function() {
+                            order.push($(this).data('app'));
+                        });
+                        $(this).children('input[type=hidden]').val($.unique(order).join(', '));
+                    });
+                });
+            </script>
+        </div>    
         <?php
     }
 
@@ -443,10 +568,7 @@ class couchbeard_widget extends WP_Widget {
      *
      * return void
      */
-    private function template( $title, $search, $apps, $row_sm, $row_md, $row_lg, $style, $loadBS ) {
-        if (!empty($title)) {
-            echo '<center><h3>' . $title . '</h3></center>';
-        }
+    private function template($search, $apps, $row_sm, $row_md, $row_lg, $style, $loadBS ) {
         if ($style != 'custom') {
             wp_register_style('style_' . $style, plugins_url( 'css/style_' . $style . '.css' , __FILE__ ));
             wp_enqueue_style('style_' . $style);
@@ -494,7 +616,7 @@ class couchbeard_widget extends WP_Widget {
                 continue;
             }
             $apps_name[] = self::$apps[intval($app)];
-            $app = strtolower(self::$apps[intval($app)]);
+            $app = strtolower($app);
             $app_file = plugin_dir_path( __FILE__ ) . $app . '.php';
             if (file_exists($app_file)) {
                 //include $app_file;
@@ -540,7 +662,7 @@ function myprefix_autocomplete_init() {
     add_action( 'wp_ajax_myprefix_autocompletesearch', 'myprefix_autocomplete_suggestions' );
     add_action( 'wp_ajax_nopriv_myprefix_autocompletesearch', 'myprefix_autocomplete_suggestions' );  
 }
-add_action( 'init', 'myprefix_autocomplete_init' );    
+//add_action( 'init', 'myprefix_autocomplete_init' );    
 
 function myprefix_autocomplete_suggestions() {
     //$url = "http://www.omdbapi.com/?s=" . urlencode($_REQUEST['term']);
