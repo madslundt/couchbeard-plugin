@@ -409,9 +409,9 @@ class couchbeard_widget extends WP_Widget {
                 background-color: #fff;
                 display: inline-flex;
                 margin: 0 5px;
-                -moz-box-shadow: inset 0 0 5px #888;
-                -webkit-box-shadow: inset 0 0 5px#888;
-                box-shadow: inset 0 0 5px #888;
+                -moz-box-shadow: inset 0 0 5px #aaa;
+                -webkit-box-shadow: inset 0 0 5px#aaa;
+                box-shadow: inset 0 0 5px #aaa;
             }
             .couchbeard-widget .box:first-child {
                 margin-left: 0;
@@ -572,7 +572,7 @@ class couchbeard_widget extends WP_Widget {
         if ($style != 'custom') {
             wp_register_style('style_' . $style, plugins_url( 'css/style_' . $style . '.css' , __FILE__ ));
             wp_enqueue_style('style_' . $style);
-            wp_enqueue_style('fancyinput_style' . $style);
+            wp_enqueue_style('fancyinput_style');
             wp_enqueue_script( 'fancyinput_script' );
             wp_register_script( 'cb_style_js', plugins_url('js/style_js.js', __FILE__ ), array('jquery', 'fancyinput'), '1.0', true );
             wp_enqueue_script( 'cb_style_js' );
@@ -608,11 +608,8 @@ class couchbeard_widget extends WP_Widget {
             printf(__('Error loading %s.', 'couchbeard'), $search_file);
         }
         $apps_name = array();
-        if (!isset($apps[0])) {
-            $apps = $apps[''];
-        }
         foreach ($apps as $app) {
-            if (!empty($app)) {
+            if (empty($app)) {
                 continue;
             }
             $apps_name[] = $app;
@@ -635,7 +632,6 @@ class couchbeard_widget extends WP_Widget {
             wp_enqueue_script( $app );
 
         }
-
         $apps_file = plugin_dir_path( __FILE__ ) . 'views/apps.php';
         if( file_exists( $apps_file ) ) {
 
