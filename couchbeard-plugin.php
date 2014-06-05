@@ -531,7 +531,7 @@ class couchbeard_widget extends WP_Widget {
                         if ($(this).is(":checked")) {
                             if ($(this).data('app')) {
                                 order.push($(this).data('app'));
-                                $('#<?php echo $this->get_field_id("cb"); ?>' + ' .snaptarget').append('<li data-app="' + $(this).data('app').toLowerCase() + '" title="' + $(this).data('app') + '" class="draggable box ' + $(this).data('app').toLowerCase() + '">' +
+                                $('#<?php echo $this->get_field_id("cb"); ?>' + ' .snaptarget').append('<li data-app="' + $(this).data('app') + '" title="' + $(this).data('app') + '" class="draggable box ' + $(this).data('app').toLowerCase() + '">' +
                                                     '<img src="' + imgpath + '/' + $(this).data('app').toLowerCase() + '-min.png" alt="' + $(this).data('app') + '" />' +
                                                 '</li>');
                             }

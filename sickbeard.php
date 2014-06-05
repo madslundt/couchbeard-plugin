@@ -201,13 +201,13 @@ class sickbeard extends couchbeard
 								<?php foreach ($s as $e): ?>
 									<a href="#" class="list-group-item">
 										<h4 class="list-group-item-heading"><?php echo $e->show_name; ?></h4>
-										<p class="list-group-item-text"><?php echo '(s' . sprintf('%02s', $e->season) . 'e' . sprintf('%02s', $e->episode) . '): ' . $e->ep_name; ?> 
+										<div class="list-group-item-text"><p class="pull-left title" title="<?php echo '(s' . sprintf('%02s', $e->season) . 'e' . sprintf('%02s', $e->episode) . '): ' . $e->ep_name; ?>"><?php echo '(s' . sprintf('%02s', $e->season) . 'e' . sprintf('%02s', $e->episode) . '): ' . $e->ep_name; ?></p>
 											<span class="pull-right"><i class="glyphicon glyphicon-time"></i>  
 												<time datetime="<?php echo $e->airdate; ?>" title="<?php echo $this->getReleaseDate($e->airdate); ?>">
 													<?php echo human_time_diff( strtotime($e->airdate . ' +1 day'), current_time('timestamp') ); ?>
 												</time>
 											</span>
-									</p>
+										</div>
 									</a>
 								<?php endforeach; ?>
 								</div>

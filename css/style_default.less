@@ -56,26 +56,29 @@
 
 				.list-group-item-heading {
 					color: #000;
+					text-overflow: ellipsis;
+					overflow: hidden;
+					white-space: nowrap;
 				}
-
+				
 				.list-group-item-text {
 					color: #888;
+					text-overflow: ellipsis;
+					overflow: hidden;
 					span, i, time {
 						color: #888;
+					}
+					.title {
+						overflow: hidden;
+						width: auto;
+						max-width: 70%;
+						text-overflow: ellipsis;
+						word-break: normal;
+						white-space: nowrap;
 					}
 				}
 			}
 		}
-	}
-
-	.list-group-item-heading {
-		text-overflow: ellipsis;
-		overflow: hidden;
-		white-space: nowrap;
-	}
-	.list-group-item-text {
-		text-overflow: ellipsis;
-		overflow: hidden;
 	}
 
 	.loadmore p {
