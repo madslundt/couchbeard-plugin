@@ -612,18 +612,18 @@ class couchbeard_widget extends WP_Widget {
             $apps = $apps[''];
         }
         foreach ($apps as $app) {
-            if (!isset(self::$apps[intval($app)])) {
+            if (!empty($app)) {
                 continue;
             }
-            $apps_name[] = self::$apps[intval($app)];
+            $apps_name[] = $app;
             $app = strtolower($app);
             $app_file = plugin_dir_path( __FILE__ ) . $app . '.php';
-            if (file_exists($app_file)) {
+            /*if (file_exists($app_file)) {
                 //include $app_file;
             } else {
                 printf(__('Error loading %s.', 'couchbeard'), $app_file);
                 continue;
-            }
+            }*/
 
             wp_register_script( $app, plugins_url('js/' . $app . '.js', __FILE__ ), array('jquery'), '1.0', true );
             $translation_array = array(
