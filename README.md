@@ -1,7 +1,33 @@
 couchbeard-plugin
 =================
+Wordpress plugin to access xbmc, couchpotato, sickbeard and sabnzbd functionality.
+Widget added, so now it is easy to implement on your own theme.
 
-Wordpress plugin to access xbmc, couchpotato, sickbeard and sabnzbd functionality
+Still in developer stage.
+
+How to use
+==========
+Enter your informations in the app and use the widget to get a overall lock for your apps.
+
+Progress
+========
+ - Couchbeard abstract class (done)
+ - Couchpotato class extending couchbeard (done)
+ - Sickbeard class extending couchbeard (done)
+ - Sabnzbd class extending couchbeard (done)
+ - Xbmc class extending couchbeard (done)
+ - Widget (done)
+ - Couchpotato ajax calls (80% done)
+ - Sickbeard ajax calls (50% done)
+ - Sabnzbd ajax calls
+ - Xbmc ajax calls
+ - Couchpotato view (70% done)
+ - Sickbeard view (50% done)
+ - Sabnzbd view
+ - Xbmc view
+ - Update/refresh button
+ - Themes (default and dark) for the plugin
+ - Search bar with autocomplete
 
 
 How to use
