@@ -317,12 +317,6 @@ class couchbeard_widget extends WP_Widget {
         $title = isset ( $instance['title'] ) ? $instance['title'] : false;
         $search = isset( $instance['search'] ) ? $instance['search'] : true;
         $apps = isset( $instance['apps'] ) ? $instance['apps'] : self::$apps;
-        
-        // Creating variables for all apps
-        /*foreach(self::$apps as $app) {
-            $app = strtolower($app);
-            extract(array('app_' . $app => (isset($instance['app_' . $app]) ? $instance['app_' . $app] : -1)));
-        }*/
 
         $row_sm = isset( $instance['row_sm'] ) ? $instance['row_sm'] : 1;
         $row_md = isset( $instance['row_md'] ) ? $instance['row_md'] : 3;
@@ -337,7 +331,7 @@ class couchbeard_widget extends WP_Widget {
         }
 
         //include the template based on user choice
-        $this->template($search, $apps, $row_sm, $row_md, $row_lg, $style, $loadBS );
+        $this->template($search, $apps, $row_sm, $row_md, $row_lg, $style, $loadBS);
         
         echo $after_widget;
     }
@@ -357,12 +351,6 @@ class couchbeard_widget extends WP_Widget {
         $instance['title'] = strip_tags($new_instance['title']);
         $instance['search'] = $new_instance['search'];
         $instance['apps'] = explode(', ', $new_instance['apps']);
-        
-        // Creating variables for all apps
-        /*foreach(self::$apps as $app) {
-            $app = strtolower($app);
-            extract(array(self::APP_DOMAIN . $app => $new_instance[self::APP_DOMAIN . $app]));
-        }*/
 
         $instance['row_sm'] = $new_instance['row_sm'];
         $instance['row_md'] = $new_instance['row_md'];
@@ -379,9 +367,6 @@ class couchbeard_widget extends WP_Widget {
      * @return mixed
      */ 
     public function form( $instance ) {
-        //wp_localize_script( 'couchbeard_admin_functions', 'admin', array('imgpath' => plugins_url( '/img', __FILE__ ), 'apps_id' => $this->get_field_id('cb_apps')) );
-        //wp_enqueue_script('couchbeard_admin_functions', plugins_url( 'js/admin.js', __FILE__ ), array('jquery', 'jquery-ui-draggable'), '1.0');
-        
         //Set up some default widget settings.
         $defaults = array(
             'title'     => 'CouchBeard',
@@ -392,12 +377,9 @@ class couchbeard_widget extends WP_Widget {
             'row_lg'    => 3,    
             'style'     => self::$styles,
             'loadbs'    => true
-        );        /*foreach (self::$apps as $app) {
-            $app = strtolower($app);
-            $defaults[self::APP_DOMAIN . $app] = -1;
-        }*/
+        );
+
         $instance = wp_parse_args( (array) $instance, $defaults );
-        //$instance['apps'] = isset($instance['apps']) ? explode(', ', $instance['apps']) : array();
         $rows = count(self::$apps);
     ?>
 
@@ -568,12 +550,12 @@ class couchbeard_widget extends WP_Widget {
      *
      * return void
      */
-    private function template($search, $apps, $row_sm, $row_md, $row_lg, $style, $loadBS ) {
+    private function template($search, $apps, $row_sm, $row_md, $row_lg, $style, $loadBS) {
         if ($style != 'custom') {
-            wp_register_style('style_' . $style, plugins_url( 'css/style_' . $style . '.css' , __FILE__ ));
-            wp_enqueue_style('style_' . $style);
+            wp_register_style('cb_style_' . $style, plugins_url( 'css/style_' . $style . '.css' , __FILE__ ));
+            wp_enqueue_style('cb_style_' . $style);
             wp_enqueue_style('fancyinput_style');
-            wp_enqueue_script( 'fancyinput_script' );
+            wp_enqueue_script('fancyinput_script');
             wp_register_script( 'cb_style_js', plugins_url('js/style_js.js', __FILE__ ), array('jquery', 'fancyinput'), '1.0', true );
             wp_enqueue_script( 'cb_style_js' );
         }
@@ -600,6 +582,7 @@ class couchbeard_widget extends WP_Widget {
             wp_enqueue_style('bs_style' . $style);
         }
         $search_file = plugin_dir_path( __FILE__ ) . 'views/search.php';
+        echo '<div class="couchbeard">';
         if( file_exists( $search_file ) ){
 
             include $search_file;
@@ -640,6 +623,7 @@ class couchbeard_widget extends WP_Widget {
         } else {
             printf(__('Error loading %s.', 'couchbeard'), $apps_file);
         }
+        echo '</div>';
     }
 
 } // end of widget

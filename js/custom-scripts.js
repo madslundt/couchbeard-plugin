@@ -30,4 +30,8 @@ $(function() {
         setTimeout(function() { $('.js-update').children('i').removeClass('loader'); }, 3000);
         return false;
     });
+
+    $(function() {
+    $('.couchbeard .search :input').val('').fancyInput()[0].focus();
+});
 });
