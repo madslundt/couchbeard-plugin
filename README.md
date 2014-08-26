@@ -7,7 +7,7 @@ Still in developer stage.
 
 How to use
 ==========
-Enter your informations in the app and use the widget to get a overall lock for your apps.
+Enter your informations in the app and use the widget to get an overall look.
 
 Progress
 ========
@@ -19,8 +19,8 @@ Progress
  - Widget (done)
  - Couchpotato ajax calls (80% done)
  - Sickbeard ajax calls (50% done)
- - Sabnzbd ajax calls
- - Xbmc ajax calls
+ - Sabnzbd ajax calls (10%)
+ - Xbmc ajax calls (50%)
  - Couchpotato view (70% done)
  - Sickbeard view (50% done)
  - Sabnzbd view
